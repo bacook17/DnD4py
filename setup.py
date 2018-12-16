@@ -4,7 +4,6 @@ import os
 import re
 import codecs
 from setuptools import setup, Command, find_packages
-from setuptools.command.install import install
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -42,9 +41,9 @@ class CleanCommand(Command):
 
 entry_points = {
     'console_scripts': ['lookup5e = DnD4py.lookup_5e:lookup',
-                        'monster = DnD4py.lookup_5e:monster_lookup',
-                        'spell = DnD4py.lookup_5e:spell_lookup',
-                        'item = DnD4py.lookup_5e:item_lookup',
+                        'monster5e = DnD4py.lookup_5e:monster_lookup',
+                        'spell5e = DnD4py.lookup_5e:spell_lookup',
+                        'item5e = DnD4py.lookup_5e:item_lookup',
                         'roll = DnD4py.roll4me:roll',
                         ]
 }
@@ -52,11 +51,17 @@ entry_points = {
 setup(
     name="DnD4py",
     version=find_version('DnD4py', '__init__.py'),
-    install_requires=['numpy', 'bs4'],
+    install_requires=['numpy', 'bs4', 'requests'],
     packages=find_packages(),
     entry_points=entry_points,
+    license='LICENSE',
     author="Ben Cook",
     author_email="bacook17@gmail.com",
     description="Python Codes for DnD 5e",
-    keywords="games, Dungeons and Dragons"
+    keywords="games, Dungeons and Dragons",
+    url="https://github.com/bacook17/DnD4py/",
+    classifiers=[
+        "Topic :: Games/Entertainment :: Role-Playing",
+        "Programming Language :: Python",
+    ]
 )

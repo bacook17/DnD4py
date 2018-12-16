@@ -26,8 +26,8 @@ class Roll20:
         url = site + formatted_name
         page = requests.get(url)
         if page.status_code != 200:
-            raise FileNotFoundError('{:s} not found at {:s}.'.format(name,
-                                                                     url))
+            raise IOError('{:s} not found at {:s}.'.format(name,
+                                                           url))
         html = page.text
         soup = bs(html, 'html.parser')
         self.attributes = ({stringify(a.text):
@@ -63,13 +63,17 @@ class Roll20:
         
     def __str__(self):
         return self.name + '\n\n' + self.str_attributes + self.str_desc
-        
+
+    @property
+    def as_unicode(self):
+        return self.__str__().encode('utf-8')
+    
 
 class Roll20Monster(Roll20):
     
     def __init__(self, name,
                  site='https://roll20.net/compendium/dnd5e/Monsters:'):
-        super().__init__(name, site=site)
+        Roll20.__init__(self, name, site=site)
                 
     @property
     def str_attributes(self):
@@ -93,7 +97,7 @@ class Roll20Monster(Roll20):
 class Roll20Spell(Roll20):
     def __init__(self, name,
                  site='https://roll20.net/compendium/dnd5e/Spells:'):
-        super().__init__(name, site=site)
+        Roll20.__init__(self, name, site=site)
                                         
     @property
     def str_attributes(self):
@@ -115,7 +119,7 @@ class Roll20Spell(Roll20):
 class Roll20Item(Roll20):
     def __init__(self, name,
                  site='https://roll20.net/compendium/dnd5e/Items:'):
-        super().__init__(name, site=site)
+        Roll20.__init__(self, name, site=site)
 
 
 def monster_lookup():
@@ -128,13 +132,16 @@ def monster_lookup():
 
     try:
         item = Roll20Monster(text)
-    except FileNotFoundError as e:
+    except IOError as e:
         print(e)
         item = None
     if item is None or len(item) == 0:
         return False
     else:
-        print(item)
+        try:
+            print(item)
+        except UnicodeEncodeError:
+            print(item.as_unicode)
         return True
     
     
@@ -148,13 +155,16 @@ def spell_lookup():
     
     try:
         item = Roll20Spell(text)
-    except FileNotFoundError as e:
+    except IOError as e:
         print(e)
         item = None
     if item is None or len(item) == 0:
         return False
     else:
-        print(item)
+        try:
+            print(item)
+        except UnicodeEncodeError:
+            print(item.as_unicode)
         return True
 
     
@@ -168,13 +178,16 @@ def item_lookup():
     
     try:
         item = Roll20Item(text)
-    except FileNotFoundError as e:
+    except IOError as e:
         print(e)
         item = None
     if item is None or len(item) == 0:
         return False
     else:
-        print(item)
+        try:
+            print(item)
+        except UnicodeEncodeError:
+            print(item.as_unicode)
         return True
 
 
@@ -209,8 +222,11 @@ def main():
     if item is None or len(item) == 0:
         print('Not Found')
     else:
-        print(item)
-
+        try:
+            print(item)
+        except UnicodeEncodeError:
+            print(item.as_unicode)
+ 
         
 if __name__ == '__main__':
     main()

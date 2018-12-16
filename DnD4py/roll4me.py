@@ -42,5 +42,6 @@ def roll():
     print('Mean: {:.1f}'.format(means))
     print('Percentile: {:.1f}%'.format((total > distribution).mean()*100.))
 
+
 if __name__ == '__main__':
-    main()
+    roll()
