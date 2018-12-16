@@ -58,6 +58,7 @@ setup(
     author="Ben Cook",
     author_email="bacook17@gmail.com",
     description="Python Codes for DnD 5e",
+    long_description=("""Python Codes for DnD 5e"""),
     keywords="games, Dungeons and Dragons",
     url="https://github.com/bacook17/DnD4py/",
     classifiers=[
