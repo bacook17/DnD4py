@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import numpy as np
 import sys
+import argparse
 
 n_trials = 1000000
 
@@ -17,7 +18,24 @@ def parse_roll(str_in):
 
     
 def roll():
-    args = sys.argv[1:]
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=(
+            """
+            Parses a list of dice rolls and modifiers, and prints
+            the total of one realization, the individual rolls that
+            produced that total, and the mean/percentile of that roll
+            relative to the overall distribution.
+
+            Example Usage:
+            roll 1d10 + 3d6 + 8
+
+            
+            """))
+    parser.add_argument('rolls', nargs='+', help=(
+        """The list of rolls and modifiers to simulate."""))
+    
+    args = parser.parse_args().rolls
     message1 = "= "
     message2 = ""
     total = 0

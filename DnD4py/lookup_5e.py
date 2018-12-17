@@ -124,7 +124,9 @@ class Roll20Item(Roll20):
 
 def monster_lookup():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=(
+            """Searches Roll20.net 5e monster compendium for the term queried."""))
     parser.add_argument('query', nargs='+', help='The words to search')
 
     args = parser.parse_args()
@@ -147,7 +149,9 @@ def monster_lookup():
     
 def spell_lookup():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=(
+            """Searches Roll20.net 5e Spell compendium for the term queried."""))
     parser.add_argument('query', nargs='+', help='The words to search')
 
     args = parser.parse_args()
@@ -170,7 +174,9 @@ def spell_lookup():
     
 def item_lookup():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=(
+            """Searches Roll20.net 5e Item compendium for the term queried."""))
     parser.add_argument('query', nargs='+', help='The words to search')
 
     args = parser.parse_args()
@@ -193,7 +199,9 @@ def item_lookup():
 
 def main():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=(
+            """Searches Roll20.net 5e compendium for the term queried."""))
 
     parser.add_argument('--monster',
                         help='Search only monster lists', action='store_true')
