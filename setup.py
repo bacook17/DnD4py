@@ -48,36 +48,20 @@ entry_points = {
                         ]
 }
 
-__DESCRIPTION__ = """
-Python and shell codes developed for D&D 5th edition.
-
-Codes include:
-
-roll -- simulate a complex roll of many dice and modifiers
-            Gives result, individual rolls, the mean of the distribution,
-            and the percentile of that roll relative to the distribution.
-
-lookup5e -- Lookup a term (spell name, monster, or item) on Roll20
-
-monster5e -- Lookup a monster on Roll20
-
-item5e -- Lookup an item on Roll20
-
-spell5e -- Lookup a spell on Roll20
-"""
-
+with open('README.md', encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name="DnD4py",
     version=find_version('DnD4py', '__init__.py'),
-    install_requires=['numpy', 'bs4', 'requests'],
+    install_requires=['numpy', 'bs4', 'requests', 'pypandoc'],
     packages=find_packages(),
     entry_points=entry_points,
     license='LICENSE',
     author="Ben Cook",
     author_email="bacook17@gmail.com",
     description="Python Codes for DnD 5e",
-    long_description=__DESCRIPTION__,
+    long_description=long_description,
     keywords="games, Dungeons and Dragons",
     url="https://github.com/bacook17/DnD4py/",
     classifiers=[

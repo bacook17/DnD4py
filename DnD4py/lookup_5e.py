@@ -225,7 +225,7 @@ def main():
                   Roll20Item, Roll20]:
             try:
                 item = r(text)
-            except FileNotFoundError as e:
+            except IOError as e:
                 continue
     if item is None or len(item) == 0:
         print('Not Found')
