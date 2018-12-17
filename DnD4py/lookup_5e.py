@@ -227,6 +227,8 @@ def main():
                 item = r(text)
             except IOError as e:
                 continue
+            else:
+                break
     if item is None or len(item) == 0:
         print('Not Found')
     else:
