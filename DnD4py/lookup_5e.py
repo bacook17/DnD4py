@@ -213,7 +213,8 @@ def main():
 
     args = parser.parse_args()
     text = ' '.join(args.query)
-    
+
+    item = None
     if args.monster:
         item = Roll20Monster(text)
     elif args.spell:
