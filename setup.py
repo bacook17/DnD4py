@@ -48,7 +48,7 @@ entry_points = {
                         ]
 }
 
-with open('README.md', encoding='utf-8') as f:
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
@@ -62,6 +62,7 @@ setup(
     author_email="bacook17@gmail.com",
     description="Python Codes for DnD 5e",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     keywords="games, Dungeons and Dragons",
     url="https://github.com/bacook17/DnD4py/",
     classifiers=[
