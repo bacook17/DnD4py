@@ -28,6 +28,10 @@ class Roll20:
         if page.status_code != 200:
             raise IOError('{:s} not found at {:s}.'.format(name,
                                                            url))
+        if 'marketplace' in page.url:
+              raise IOError('{:s} not found at {:s}, '
+                            'likely because this content is behind a paywall. '
+                            'Encourage developer to add alternative back-ends to Roll20'.format(name, url))
         html = page.text
         soup = bs(html, 'html.parser')
         self.attributes = ({stringify(a.text):
@@ -106,7 +110,8 @@ class Roll20Spell(Roll20):
             if self.get(k) is not None:
                 res += k + ': ' + self.get(k, 'EMPTY') + '\n'
         res += '\n'
-        for k in ['Casting Time', 'Duration', 'Components', 'Material']:
+        for k in ['Casting Time', 'Duration', 'Concentration',
+                  'Components', 'Material']:
             if self.get(k) is not None:
                 res += k + ': ' + self.get(k, 'EMPTY') + '\n'
         res += '\n'
