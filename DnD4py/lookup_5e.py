@@ -11,7 +11,7 @@ def stringify(text):
     text = text.replace('<br>', '\n').replace('<br />', '\n')
     text = text.replace('<h2>', '*').replace('</h2>', '*\n')
     text = text.replace('<strong>', '').replace('</strong>', '')
-    return wrap(text, 80, drop_whitespace=False, replace_whitespace=False)
+    return wrap(text, 70, drop_whitespace=False, replace_whitespace=False)
 
 
 def score_to_mod(score):
@@ -110,7 +110,7 @@ class Roll20Spell(Roll20):
             if self.get(k) is not None:
                 res += k + ': ' + self.get(k, 'EMPTY') + '\n'
         res += '\n'
-        for k in ['Casting Time', 'Duration', 'Concentration',
+        for k in ['Casting Time', 'Duration', 'Concentration', 'Ritual',
                   'Components', 'Material']:
             if self.get(k) is not None:
                 res += k + ': ' + self.get(k, 'EMPTY') + '\n'
@@ -119,13 +119,86 @@ class Roll20Spell(Roll20):
             if self.get(k) is not None:
                 res += k + ': ' + self.get(k, 'EMPTY') + '\n'
         return res
-                                    
-                                    
+
+    def as_dungeonsheets_class(self):
+        spell_name = self.name
+        class_name = spell_name.replace(' ', '').replace('-', '')
+        res = 'class {:s}(Spell):\n'.format(class_name)
+        res += "    \"\"\"{:s}\n    \"\"\"\n".format(self.desc.replace('\n', '\n    '))
+        res += "    name = \"{:s}\"\n".format(spell_name)
+        res += "    level = {:d}\n".format(int(self.get('Level', -1)))
+        res += "    casting_time = \"{:s}\"\n".format(self.get('Casting Time', '1 action'))
+        res += "    casting_range = \"{:s}\"\n".format(self.get('Range', ''))
+        str_components = self.get('Components', '').upper().split(' ')
+        if len(str_components) == 0:
+            res += "    components = ()\n"
+        else:
+            res += "    components = {:s}\n".format(str(tuple(str_components)))
+        res += "    materials = \"\"\"{:s}\"\"\"\n".format(self.get('Material', ''))
+        dur_text = "\"{:s}\"\n".format(self.get('Duration', 'Instantaneous'))
+        dur_text = ("\"Concentration, {:s}".format(dur_text.lstrip('\"')) if
+                    self.get('Concentration', '') else dur_text)
+        duration = "    duration = " + dur_text
+        res += duration
+        res += "    ritual = {:}\n".format(bool(self.get('Ritual', '')))
+        res += "    magic_school = \"{:s}\"\n".format(self.get('School', ''))
+        res += "    classes = {:s}\n".format(str(tuple(self.get('Classes', '').split(', '))))
+        return res + "\n"
+
+
+class DnDSpell(Roll20Spell):
+    def __init__(self, name, site="https://www.dnd-spells.com/spell/"):
+        self.name = name.rstrip().title()
+        self.attributes = {'Ritual': False}
+        formatted_name = self.name.lower().replace(' ', '-')
+        url = site + formatted_name
+        page = requests.get(url, timeout=2)
+        if (page.status_code != 200) or (page.url != url):
+            url_other = url + '-ritual'
+            page = requests.get(url_other, timeout=2)
+            if (page.status_code != 200) or (page.url != url_other):
+                raise IOError('{:s} not found at {:s}.'.format(name,
+                                                               url))
+            self.attributes['Ritual'] = True
+        soup = bs(page.text, 'html.parser')
+        base = soup.find_all('h1')[0]
+        school = base.find_next('p')
+        self.attributes['School'] = school.text
+        body = school.find_next('p')
+        details = body.text.strip().replace('\r', '').replace('\n', '').split('                 ')
+        for entry in details:
+            k, v = entry.split(': ')
+            self.attributes[k.title()] = v.capitalize()
+        if '(' in self.attributes['Components']:
+            self.attributes['Components'], mat = self.attributes['Components'].split('(')
+            self.attributes['Material'] = mat.strip(')').capitalize()
+
+        self.attributes['Components'] = self.attributes['Components'].replace(' ', '').replace(',', ' ')
+        if 'cantrip' in self.attributes['Level'].lower():
+            self.attributes['Level'] = '0'
+        desc = body.find_next('p')
+        self.desc = desc.text.strip().replace('\r', '')
+        if 'higher level' in desc.find_next('h4').text.lower():
+            desc = desc.find_next('p')
+            self.desc += '\n\nAt Higher Levels: '
+            self.desc += desc.text.strip()
+        self.desc = wrap(self.desc, 80, drop_whitespace=False,
+                        replace_whitespace=False)
+        classes = desc.find_next('p').find_next('p')
+        self.attributes['Classes'] = ', '.join(classes.text.replace(',', '').split()[1:-1])
+    
 class Roll20Item(Roll20):
     def __init__(self, name,
                  site='https://roll20.net/compendium/dnd5e/Items:'):
         Roll20.__init__(self, name, site=site)
 
+    def as_dungeonsheets_class(self):
+        spell_name = self.name
+        class_name = spell_name.replace(' ', '')
+        res = 'class {:s}(MagicItem):\n'.format(class_name)
+        res += "    \"\"\"{:s}\n    \"\"\"\n".format(self.desc.replace('\n', '\n    '))
+        res += "    name = \"{:s}\"\n".format(spell_name)
+        return res + "\n"
 
 def monster_lookup():
     parser = argparse.ArgumentParser(
@@ -157,13 +230,16 @@ def spell_lookup():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description=(
             """Searches Roll20.net 5e Spell compendium for the term queried."""))
+    parser.add_argument('--ds',
+                        help='Parse as dungeonsheets class', action='store_true')
     parser.add_argument('query', nargs='+', help='The words to search')
 
     args = parser.parse_args()
     text = ' '.join(args.query)
     
     try:
-        item = Roll20Spell(text)
+        item = DnDSpell(text)
+#         item = Roll20Spell(text)
     except IOError as e:
         print(e)
         item = None
@@ -171,7 +247,10 @@ def spell_lookup():
         return False
     else:
         try:
-            print(item)
+            if args.ds:
+                print(item.as_dungeonsheets_class())
+            else:
+                print(item)
         except UnicodeEncodeError:
             print(item.as_unicode)
         return True

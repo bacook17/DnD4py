@@ -1,4 +1,4 @@
 build/*
 dist/*
 DnD4py.egg-info/*
-.ipynb_checkpoints/*
+*/.ipynb_checkpoints/*
